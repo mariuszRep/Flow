@@ -1,4 +1,4 @@
-import React, { useCallback, useEffect } from 'react';
+import React, { useCallback, useEffect, useState } from 'react';
 import {
   ReactFlow,
   Controls,
@@ -23,7 +23,7 @@ const nodeTypes = {
   custom: CustomNode
 };
 
-function Flow() {
+function Flow({ showJson }: { showJson: boolean }) {
   const [nodes, setNodes, onNodesChange] = useNodesState(initialNodes);
   const [edges, setEdges, onEdgesChange] = useEdgesState(initialEdges);
   const deleteKeyPressed = useKeyPress('Delete');
@@ -59,6 +59,10 @@ function Flow() {
     setNodes((nds) => [...nds, newNode]);
   }, [setNodes]);
 
+  if (showJson) {
+    return <JsonView nodes={nodes} edges={edges} />;
+  }
+
   return (
     <div className="w-full h-full">
       <ReactFlow
@@ -84,15 +88,55 @@ function Flow() {
             Add Node
           </button>
         </Panel>
+        
+        
       </ReactFlow>
     </div>
   );
 }
 
-export default function Editor() {
+function JsonView({ nodes, edges }: { nodes: Node[], edges: any[] }) {
   return (
-    <ReactFlowProvider>
-      <Flow />
-    </ReactFlowProvider>
+    <div className="w-full h-full bg-gray-50 p-4 overflow-auto">
+      <div className="bg-white p-4 rounded shadow max-w-4xl mx-auto">
+        <h3 className="font-bold mb-2">Flow JSON</h3>
+        <pre className="whitespace-pre-wrap font-mono text-sm">
+          {JSON.stringify({
+            nodes: nodes.map(node => ({
+              id: node.id,
+              data: {
+                type: node.data?.type,
+                label: node.data?.label
+              }
+            })),
+            edges: edges.map(edge => ({
+              id: edge.id,
+              source: edge.source,
+              target: edge.target
+            }))
+          }, null, 2)}
+        </pre>
+      </div>
+    </div>
   );
-} 
+}
+
+export default function Editor() {
+  const [showJson, setShowJson] = useState(false);
+
+  return (
+    <div className="relative w-full h-full">
+      <div className="absolute top-4 right-4 z-10">
+        <button
+          onClick={() => setShowJson(!showJson)}
+          className="px-3 py-1 bg-white text-gray-800 rounded shadow hover:bg-gray-50 border border-gray-200 transition-colors"
+        >
+          {showJson ? 'Show Flow' : 'Show JSON'}
+        </button>
+      </div>
+      <ReactFlowProvider>
+        <Flow showJson={showJson} />
+      </ReactFlowProvider>
+    </div>
+  );
+}
