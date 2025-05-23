@@ -1,6 +1,6 @@
 import { useState, useCallback } from 'react';
 import { Node as FlowNode, Handle, Position, useReactFlow } from '@xyflow/react';
-import { FileEdit } from 'lucide-react';
+import { FileEdit, ArrowRightFromLine, ArrowRight, Split, ArrowRightToLine } from 'lucide-react';
 import { Dialog } from '@headlessui/react';
 import MultiSelectDropdown, { Option } from './MultiSelectDropdown';
 
@@ -45,11 +45,31 @@ interface NodeProps {
   id: string;
 }
 
-const NODE_TYPES: { value: NodeType; label: string; description: string }[] = [
-  { value: 'entry', label: 'Entry', description: 'Starting point of the flow' },
-  { value: 'linear', label: 'Linear', description: 'Basic processing step' },
-  { value: 'conditional', label: 'Conditional', description: 'Decision point with multiple paths' },
-  { value: 'exit', label: 'Exit', description: 'End point of the flow' },
+const NODE_TYPES: { value: NodeType; label: string; description: string; icon: JSX.Element }[] = [
+  { 
+    value: 'entry', 
+    label: 'Entry', 
+    description: 'Starting point of the flow left edge only',
+    icon: <ArrowRightFromLine className="w-6 h-6 text-blue-500" />
+  },
+  { 
+    value: 'linear', 
+    label: 'Linear', 
+    description: 'Basic processing step, left edge only one, right edge multiple',
+    icon: <ArrowRight className="w-6 h-6 text-green-500" />
+  },
+  { 
+    value: 'conditional', 
+    label: 'Conditional', 
+    description: 'Decision point with multiple paths, left edge multiple, right edge multiple',
+    icon: <Split className="w-6 h-6 text-yellow-500 transform rotate-90" />
+  },
+  { 
+    value: 'exit', 
+    label: 'Exit', 
+    description: 'End point of the flow, right edge only',
+    icon: <ArrowRightToLine className="w-6 h-6 text-red-500" />
+  }
 ];
 
 // Function to convert nodes to options
@@ -156,7 +176,7 @@ export function Node({ data, id }: NodeProps) {
         />
         <div className="flex flex-col items-center">
           <div className="rounded-full w-8 h-8 flex justify-center items-center bg-gray-200">
-            <FileEdit size={16} />
+            {NODE_TYPES.find(type => type.value === data.type)?.icon || <FileEdit size={16} />}
           </div>
           <div className="mt-1">
             <div className="text-[10px] text-center">{data.label}</div>
@@ -199,20 +219,25 @@ export function Node({ data, id }: NodeProps) {
               <label className="block text-sm font-medium text-gray-700 mb-1">
                 Node Type
               </label>
-              <select
-                value={nodeType}
-                onChange={(e) => setNodeType(e.target.value as NodeType)}
-                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white"
-              >
+              <div className="grid grid-cols-2 gap-2">
                 {NODE_TYPES.map((type) => (
-                  <option key={type.value} value={type.value}>
-                    {type.label}
-                  </option>
+                  <button
+                    key={type.value}
+                    onClick={() => setNodeType(type.value)}
+                    className={`flex items-center gap-2 p-2 rounded-md border ${
+                      nodeType === type.value
+                        ? 'border-blue-500 bg-blue-50'
+                        : 'border-gray-200 hover:bg-gray-50'
+                    }`}
+                  >
+                    {type.icon}
+                    <div className="flex flex-col items-start">
+                      <span className="text-sm font-medium">{type.label}</span>
+                      <span className="text-xs text-gray-500">{type.description}</span>
+                    </div>
+                  </button>
                 ))}
-              </select>
-              <p className="mt-1 text-sm text-gray-500">
-                {NODE_TYPES.find(t => t.value === nodeType)?.description}
-              </p>
+              </div>
             </div>
 
             <div>
