@@ -1,10 +1,10 @@
 import { useState, useCallback } from 'react';
 import { Node as FlowNode, Handle, Position, useReactFlow } from '@xyflow/react';
-import { FileEdit, ArrowRightFromLine, ArrowRight, Split, ArrowRightToLine } from 'lucide-react';
+import { FileEdit, ArrowRightFromLine, Split, ArrowRightToLine, Bot, Wrench } from 'lucide-react';
 import { Dialog } from '@headlessui/react';
 import MultiSelectDropdown, { Option } from '../ui/MultiSelectDropdown';
 
-export type NodeType = 'entry' | 'linear' | 'conditional' | 'exit';
+export type NodeType = 'entry' | 'conditional' | 'exit' | 'agent' | 'tool';
 
 export interface NodeData {
   label: string;
@@ -26,14 +26,14 @@ const handleStyle = {
   zIndex: 10
 } as const;
 
-export const createNode = (position: { x: number; y: number }): FlowNode => {
+export const createNode = (position: { x: number; y: number }, nodeType: NodeType = 'entry'): FlowNode => {
   return {
     id: `node_${Date.now()}`,
     type: 'custom',
     position,
     data: { 
       label: 'New Node', 
-      type: 'linear' as NodeType,
+      type: nodeType,
       sourceEdges: [],
       targetEdges: []
     },
@@ -45,31 +45,48 @@ interface NodeProps {
   id: string;
 }
 
-const NODE_TYPES: { value: NodeType; label: string; description: string; icon: JSX.Element }[] = [
+// Combined node types for all functionality
+export const NODE_TYPES: { value: NodeType; label: string; description: string; icon: JSX.Element; category: string }[] = [
+  // Standard flow nodes
   { 
     value: 'entry', 
     label: 'Entry', 
-    description: 'Starting point of the flow left edge only',
-    icon: <ArrowRightFromLine className="w-6 h-6 text-blue-500" />
+    description: 'Starting point of the workflow',
+    icon: <ArrowRightFromLine className="w-6 h-6 text-blue-500" />,
+    category: 'standard'
   },
-  { 
-    value: 'linear', 
-    label: 'Linear', 
-    description: 'Basic processing step, left edge only one, right edge multiple',
-    icon: <ArrowRight className="w-6 h-6 text-green-500" />
-  },
+
   { 
     value: 'conditional', 
     label: 'Conditional', 
-    description: 'Decision point with multiple paths, left edge multiple, right edge multiple',
-    icon: <Split className="w-6 h-6 text-yellow-500 transform rotate-90" />
+    description: 'Decision point with multiple paths',
+    icon: <Split className="w-6 h-6 text-yellow-500 transform rotate-90" />,
+    category: 'standard'
   },
   { 
     value: 'exit', 
     label: 'Exit', 
-    description: 'End point of the flow, right edge only',
-    icon: <ArrowRightToLine className="w-6 h-6 text-red-500" />
-  }
+    description: 'End point of the workflow',
+    icon: <ArrowRightToLine className="w-6 h-6 text-red-500" />,
+    category: 'standard'
+  },
+  
+  // Specialized functionality nodes
+  { 
+    value: 'agent', 
+    label: 'Agent', 
+    description: 'Autonomous agent for complex tasks',
+    icon: <Bot className="w-6 h-6 text-purple-500" />,
+    category: 'specialized'
+  },
+  { 
+    value: 'tool', 
+    label: 'Tool', 
+    description: 'External API or function call',
+    icon: <Wrench className="w-6 h-6 text-blue-600" />,
+    category: 'specialized'
+  },
+
 ];
 
 // Function to convert nodes to options
@@ -81,7 +98,7 @@ const nodeToOption = (node: FlowNode): Option => ({
 export function Node({ data, id }: NodeProps) {
   const [isOpen, setIsOpen] = useState(false);
   const [nodeLabel, setNodeLabel] = useState(data.label);
-  const [nodeType, setNodeType] = useState<NodeType>(data.type || 'linear');
+  const [nodeType, setNodeType] = useState<NodeType>(data.type || 'entry');
   
   // Get React Flow instance to manipulate edges
   const { getNodes, getEdges, setEdges } = useReactFlow();
@@ -166,7 +183,7 @@ export function Node({ data, id }: NodeProps) {
   return (
     <>
       <div 
-        className="relative px-4 py-2 shadow-md rounded-xl bg-white border border-blue-400"
+        className="relative p-3 shadow-md rounded-xl bg-gray-700 text-white border border-gray-600 w-64 hover:bg-gray-600 transition-colors h-24"
         onDoubleClick={() => setIsOpen(true)}
       >
         <Handle 
@@ -174,14 +191,16 @@ export function Node({ data, id }: NodeProps) {
           position={Position.Left} 
           style={handleStyle}
         />
-        <div className="flex flex-col items-center">
-          <div className="rounded-full w-8 h-8 flex justify-center items-center bg-gray-200">
-            {NODE_TYPES.find(type => type.value === data.type)?.icon || <FileEdit size={16} />}
+        <div className="flex items-center gap-3 h-full">
+          <div className="flex-1 flex flex-col justify-center">
+            <div className="font-medium">{data.label} Node</div>
+            <div className="text-xs text-gray-400 line-clamp-2 h-10">{NODE_TYPES.find(type => type.value === data.type)?.description || 'Node'}</div>
           </div>
-          <div className="mt-1">
-            <div className="text-[10px] text-center">{data.label}</div>
-          </div>
+          <button className="p-2 rounded-full hover:bg-gray-500 flex items-center justify-center w-10 h-10">
+            {NODE_TYPES.find(type => type.value === data.type)?.icon || <FileEdit className="w-6 h-6 text-gray-400" />}
+          </button>
         </div>
+        
         <Handle 
           type="source" 
           position={Position.Right} 
@@ -226,7 +245,7 @@ export function Node({ data, id }: NodeProps) {
                     onClick={() => setNodeType(type.value)}
                     className={`flex items-center gap-2 p-2 rounded-md border ${
                       nodeType === type.value
-                        ? 'border-blue-500 bg-blue-50'
+                        ? type.category === 'specialized' ? 'border-purple-500 bg-purple-50' : 'border-blue-500 bg-blue-50'
                         : 'border-gray-200 hover:bg-gray-50'
                     }`}
                   >
