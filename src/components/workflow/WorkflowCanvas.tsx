@@ -14,8 +14,8 @@ import {
   useOnSelectionChange
 } from '@xyflow/react';
 import '@xyflow/react/dist/style.css';
-import CustomNode, { createNode } from './Node';
-import { initialEdges, handleConnect, removeEdgesForNodes, defaultEdgeOptions } from './Edge';
+import CustomNode, { createNode } from './WorkflowNode';
+import { initialEdges, handleConnect, removeEdgesForNodes, defaultEdgeOptions } from './WorkflowEdge';
 
 const initialNodes: Node[] = [];
 

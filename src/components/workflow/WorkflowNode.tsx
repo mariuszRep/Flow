@@ -2,7 +2,7 @@ import { useState, useCallback } from 'react';
 import { Node as FlowNode, Handle, Position, useReactFlow } from '@xyflow/react';
 import { FileEdit, ArrowRightFromLine, ArrowRight, Split, ArrowRightToLine } from 'lucide-react';
 import { Dialog } from '@headlessui/react';
-import MultiSelectDropdown, { Option } from './MultiSelectDropdown';
+import MultiSelectDropdown, { Option } from '../ui/MultiSelectDropdown';
 
 export type NodeType = 'entry' | 'linear' | 'conditional' | 'exit';
 
