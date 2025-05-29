@@ -18,7 +18,7 @@ const WorkflowMenu: React.FC<WorkflowMenuProps> = ({ onAddNode }) => {
         {NODE_TYPES.map((node) => (
           <div 
             key={node.value}
-            className="p-3 bg-gray-700 rounded-md border border-gray-600 cursor-pointer hover:bg-gray-600 transition-colors h-24"
+            className="p-3 bg-gray-700 rounded-xl border border-gray-600 cursor-pointer hover:bg-gray-600 transition-colors h-24"
             onClick={() => onAddNode(node.value)}
           >
             <div className="flex items-center gap-3 h-full">

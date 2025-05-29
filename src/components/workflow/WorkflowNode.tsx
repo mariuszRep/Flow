@@ -183,7 +183,7 @@ export function Node({ data, id }: NodeProps) {
   return (
     <>
       <div 
-        className="relative px-4 py-2 shadow-md rounded-xl bg-white border border-blue-400"
+        className="relative p-3 shadow-md rounded-xl bg-gray-700 text-white border border-gray-600 w-64 hover:bg-gray-600 transition-colors h-24"
         onDoubleClick={() => setIsOpen(true)}
       >
         <Handle 
@@ -191,14 +191,16 @@ export function Node({ data, id }: NodeProps) {
           position={Position.Left} 
           style={handleStyle}
         />
-        <div className="flex flex-col items-center">
-          <div className="rounded-full w-10 h-10 flex justify-center items-center bg-gray-200">
-            {NODE_TYPES.find(type => type.value === data.type)?.icon || <FileEdit className="w-6 h-6 text-gray-500" />}
+        <div className="flex items-center gap-3 h-full">
+          <div className="flex-1 flex flex-col justify-center">
+            <div className="font-medium">{data.label} Node</div>
+            <div className="text-xs text-gray-400 line-clamp-2 h-10">{NODE_TYPES.find(type => type.value === data.type)?.description || 'Node'}</div>
           </div>
-          <div className="mt-1">
-            <div className="text-[10px] text-center">{data.label}</div>
-          </div>
+          <button className="p-2 rounded-full hover:bg-gray-500 flex items-center justify-center w-10 h-10">
+            {NODE_TYPES.find(type => type.value === data.type)?.icon || <FileEdit className="w-6 h-6 text-gray-400" />}
+          </button>
         </div>
+        
         <Handle 
           type="source" 
           position={Position.Right} 
